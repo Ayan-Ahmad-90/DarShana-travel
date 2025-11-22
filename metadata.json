@@ -1,0 +1,8 @@
+{
+  "name": "DarShana - AI Travel Experience",
+  "description": "A modern, AI-powered travel application for exploring India. Features mood-based recommendations, sustainable travel planning, and an intelligent travel assistant.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
