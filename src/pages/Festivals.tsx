@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, MapPin, Filter, Grid, Map as MapIcon, X, TrendingUp } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Grid, Map as MapIcon, TrendingUp } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-delete (L.Icon.Default.prototype)._getIconUrl;
+delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -400,17 +400,17 @@ const filterCategories = [
   { label: "Historical Places", value: "historical" },
 ];
 
-const FlyToLocation = ({ position }) => {
+const FlyToLocation = ({ position }: { position: [number, number] | null }) => {
   const map = useMap();
   useEffect(() => { if (position) map.flyTo(position, 6); }, [position, map]);
   return null;
 };
 
-const NextMonthHighlight = ({ festivalsData }) => {
+const NextMonthHighlight = ({ festivalsData }: { festivalsData: any[] }) => {
   const months = ['January', 'February', 'March', 'April','May','June','July','August','September','October','November','December'];
   const nextMonthName = months[(new Date().getMonth() + 1) % 12];
 
-  const events = festivalsData.filter(e => e.month.includes(nextMonthName));
+  const events = festivalsData.filter((e: any) => e.month.includes(nextMonthName));
 
   return (
     <div className={`p-4 mb-8 rounded-lg shadow ${events.length ? "bg-green-50 border-l-4 border-green-600" : "bg-orange-50 border-l-4 border-orange-500"}`}>
@@ -473,7 +473,7 @@ export default function Festivals() {
       {!showMap && (
         <>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedCards.map(card => {
+          {displayedCards.map((card: any) => {
             const desc = "desc" in card ? (card as any).desc : "description" in card ? (card as any).description : "";
             const img = "img" in card ? (card as any).img : "https://placehold.co/400";
             return (

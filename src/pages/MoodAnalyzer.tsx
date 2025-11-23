@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Camera, Upload, RefreshCw, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 
@@ -37,7 +37,7 @@ const STEPS = [
 ];
 
 // Unified main component
-const MoodAnalyzer: React.FC = () => {
+const MoodAnalyzer = () => {
   // Mode selection: 'ai' is default, 'manual' for optional self-select
   const [mode, setMode] = useState<'ai' | 'manual'>('ai');
   // AI mood analyzer states
@@ -87,7 +87,7 @@ const MoodAnalyzer: React.FC = () => {
       setIsCameraOpen(false);
     }
   };
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: any) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
