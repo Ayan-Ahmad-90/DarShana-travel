@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, MapPin, Filter, Grid, Map as MapIcon, X, TrendingUp, Download } from 'lucide-react';
+import { Calendar, MapPin, Filter, Grid, Map as MapIcon, X, TrendingUp } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// --- LEAFLET ICON FIX ---
-// Do not remove this for proper marker icons!
 delete (L.Icon.Default.prototype)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -394,6 +392,7 @@ const historicalPlaces = [
         description: "A structural temple complex built with blocks of granite, overlooking the Bay of Bengal (UNESCO World Heritage Site)."
     },
 ];
+
 const filterCategories = [
   { label: "All Types", value: "all" },
   { label: "Festivals", value: "festival" },
@@ -401,295 +400,130 @@ const filterCategories = [
   { label: "Historical Places", value: "historical" },
 ];
 
-const months = [
-  'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
-  'September', 'October', 'November', 'December'
-];
-
-const getNextMonthName = () => {
-  const nextMonthIndex = (new Date().getMonth() + 1) % 12;
-  return months[nextMonthIndex];
-};
-
-// --- MAP FLY TO COMPONENT ---
 const FlyToLocation = ({ position }) => {
   const map = useMap();
   useEffect(() => { if (position) map.flyTo(position, 6); }, [position, map]);
   return null;
 };
 
-// --- NEXT MONTH HIGHLIGHT ---
 const NextMonthHighlight = ({ festivalsData }) => {
-  const nextMonthName = getNextMonthName();
-  const nextMonthFestivals = useMemo(() =>
-    festivalsData.filter(f => f.month.includes(nextMonthName)),
-    [nextMonthName, festivalsData]
-  );
-  if (nextMonthFestivals.length === 0) {
-    return (
-      <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mb-8 rounded-lg shadow-sm flex items-center gap-3">
-        <TrendingUp size={20} className="text-orange-600 flex-shrink-0" />
-        <p className="text-sm text-orange-800 font-medium">
-          <b>Next Month ({nextMonthName})</b>: No major events scheduled yet. Check back for updates!
-        </p>
-      </div>
-    );
-  }
-  const festivalNames = nextMonthFestivals.map(f => f.name).join(', ');
+  const months = ['January', 'February', 'March', 'April','May','June','July','August','September','October','November','December'];
+  const nextMonthName = months[(new Date().getMonth() + 1) % 12];
+
+  const events = festivalsData.filter(e => e.month.includes(nextMonthName));
+
   return (
-    <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-8 rounded-lg shadow-lg flex items-start gap-3 animate-pulse-slow">
-      <TrendingUp size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
-      <div className='flex-grow'>
-        <p className="text-sm text-green-800 font-bold">
-          ✨ UPCOMING EVENTS - {nextMonthName.toUpperCase()} ✨
-        </p>
-        <p className="text-xs text-green-700 mt-1">
-          Don't miss: <b>{festivalNames}</b>. Plan your travels now!
-        </p>
-      </div>
+    <div className={`p-4 mb-8 rounded-lg shadow ${events.length ? "bg-green-50 border-l-4 border-green-600" : "bg-orange-50 border-l-4 border-orange-500"}`}>
+      <TrendingUp className="inline-block mr-2" />
+      {events.length ? (
+        <span className="font-semibold">Upcoming in {nextMonthName}: {events.map(e => e.name).join(', ')}</span>
+      ) : (
+        "No festival next month. Stay tuned!"
+      )}
     </div>
   );
 };
 
-const Festivals = () => {
-  const [filterType, setFilterType] = useState('all');
+
+// ---------------- MAIN COMPONENT ----------------
+export default function Festivals() {
+
+  const [filterType, setFilterType] = useState("all");
   const [showMore, setShowMore] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
-  const [hoveredCardId, setHoveredCardId] = useState(null);
 
-  // Prepare all cards with cardType and unique ids for cultures/historicals
-  const allCards = [
-    ...festivalsData.map(f => ({ ...f, cardType: "festival" })),
-    ...culturalHighlights.map((f, i) => ({ ...f, cardType: "culture", id: 1000 + i })),
-    ...historicalPlaces.map((f, i) => ({ ...f, cardType: "historical", id: 2000 + i })),
-  ];
+  const allCards = useMemo(() => [
+    ...festivalsData.map(f => ({ ...f, cardType: "festival" as const })),
+    ...culturalHighlights.map((f, i) => ({ ...f, cardType: "culture" as const, id: 1000 + i })),
+    ...historicalPlaces.map((f, i) => ({ ...f, cardType: "historical" as const, id: 2000 + i })),
+  ], []);
 
-  // Filtered cards by filterType
   const filteredCards = useMemo(() => {
-    if (filterType === "festival") return festivalsData.map(f => ({ ...f, cardType: "festival" }));
-    if (filterType === "culture") return culturalHighlights.map((f, i) => ({ ...f, cardType: "culture", id: 1000 + i }));
-    if (filterType === "historical") return historicalPlaces.map((f, i) => ({ ...f, cardType: "historical", id: 2000 + i }));
+    if (filterType === "festival") return festivalsData.map(f => ({ ...f, cardType: "festival" as const }));
+    if (filterType === "culture") return culturalHighlights.map((f, i) => ({ ...f, cardType: "culture" as const, id: 1000 + i }));
+    if (filterType === "historical") return historicalPlaces.map((f, i) => ({ ...f, cardType: "historical" as const, id: 2000 + i }));
     return allCards;
-  }, [filterType]);
+  }, [filterType, allCards]);
 
-  const showCards = showMore ? filteredCards : filteredCards.slice(0, 6);
-
-  // Map focus utilities
-  const highlightedCard = selectedCard
-    || (showMap ? filteredCards.find(f => f.id === hoveredCardId) : null)
-    || filteredCards[0];
-  const initialMapCenter = highlightedCard && highlightedCard.lat && highlightedCard.lng
-    ? [highlightedCard.lat, highlightedCard.lng]
-    : [21, 78];
-
-  // Cleanup when view changes
-  useEffect(() => { setSelectedCard(null); setHoveredCardId(null); }, [showMap, filterType]);
+  const displayedCards = showMore ? filteredCards : filteredCards.slice(0, 6);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 relative">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-serif font-bold text-stone-800 mb-4">🇮🇳 Indian Festival Explorer 🇮🇳</h1>
-        <p className="text-stone-600">Immerse yourself in the vibrant colors of Indian culture, religion, and history.</p>
-      </div>
+    <div className="max-w-7xl mx-auto p-6">
+
+      <h1 className="text-4xl font-bold text-center mb-5">🇮🇳 Indian Festival Explorer</h1>
+
       <NextMonthHighlight festivalsData={festivalsData} />
-      {/* Filter Buttons */}
-      <div className="flex gap-3 mb-8 justify-center flex-wrap">
+
+      {/* FILTERS */}
+      <div className="flex gap-2 justify-center my-6">
         {filterCategories.map(cat => (
           <button
             key={cat.value}
-            className={`px-4 py-2 rounded-lg font-bold border text-sm ${filterType === cat.value ? 'bg-teal-700 text-white border-teal-700' : 'bg-white text-stone-700 border-stone-200'}`}
-            onClick={() => { setFilterType(cat.value); setShowMore(false); }}
+            onClick={() => { setShowMore(false); setFilterType(cat.value); }}
+            className={`px-4 py-2 rounded-md border text-sm 
+              ${filterType === cat.value ? "bg-teal-700 text-white" : "bg-white border-gray-300"}`}
           >
             {cat.label}
           </button>
         ))}
       </div>
 
-      {/* List or Map View */}
-      {!showMap ? (
+      {/* GRID VIEW */}
+      {!showMap && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {showCards.map(card => (
-              <div
-                key={card.id || card.name}
-                className="bg-white rounded-xl shadow-lg border border-stone-100 overflow-hidden hover:shadow-2xl transition-all group cursor-pointer"
-                onMouseEnter={() => setHoveredCardId(card.id)}
-                onMouseLeave={() => setHoveredCardId(null)}
-                onClick={() => setSelectedCard(card)}
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={card.img || 'https://placehold.co/500x300?text=Culture+or+Historical'}
-                    alt={card.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    onError={e => e.target.src = 'https://via.placeholder.com/500x300?text=Festival+Image'}
-                  />
-                  <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <span className="text-white text-xs bg-orange-600 px-2 py-1 rounded-full mb-2 inline-block font-semibold">
-                      {card.cardType === "festival" ? card.type
-                        : card.cardType === "culture" ? card.aspect
-                        : card.cardType === "historical" ? card.era : ""}
-                    </span>
-                    <h3 className="text-2xl font-bold text-white font-serif">{card.name}</h3>
-                  </div>
-                </div>
-                <div className="p-5">
-                  {card.cardType === "festival" && (
-                    <>
-                      <div className="flex items-center gap-4 text-sm text-stone-500 mb-3">
-                        <span className="flex items-center gap-1"><Calendar size={14} className="text-teal-600" /> {card.month}</span>
-                        <span className="flex items-center gap-1"><MapPin size={14} className="text-red-500" /> {card.location}</span>
-                      </div>
-                      <p className="text-stone-600 text-sm mb-4 line-clamp-2">{card.desc}</p>
-                    </>
-                  )}
-                  {card.cardType === "culture" && (
-                    <p className="text-stone-600 text-sm mb-4">{card.description}</p>
-                  )}
-                  {card.cardType === "historical" && (
-                    <>
-                      <div className="flex items-center gap-2 text-sm text-stone-500 mb-2">
-                        <span><MapPin size={14} className="text-red-500" /> {card.location}</span>
-                      </div>
-                      <p className="text-stone-600 text-sm mb-4 line-clamp-2">{card.description}</p>
-                    </>
-                  )}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayedCards.map(card => {
+            const desc = "desc" in card ? (card as any).desc : "description" in card ? (card as any).description : "";
+            const img = "img" in card ? (card as any).img : "https://placehold.co/400";
+            return (
+              <div key={card.id} onClick={() => setSelectedCard(card)} className="bg-white shadow hover:shadow-lg cursor-pointer rounded-lg overflow-hidden">
+                <img 
+                  src={img || "https://placehold.co/400"}
+                  className="h-48 w-full object-cover"
+                  onError={(e: any)=>e.target.src="https://placehold.co/400"}
+                />
+                <div className="p-4">
+                  <h2 className="font-bold text-lg">{card.name}</h2>
+                  <p className="text-gray-600 text-sm">{desc?.slice(0,100)}...</p>
                 </div>
               </div>
-            ))}
+            );
+          })}
+        </div>
+
+        {filteredCards.length > 6 && (
+          <div className="text-center my-6">
+            <button onClick={() => setShowMore(!showMore)} className="bg-blue-600 text-white px-6 py-2 rounded-lg">
+              {showMore ? "Show Less" : "Show More"}
+            </button>
           </div>
-          {filteredCards.length > 6 && (
-            <div className="text-center mt-6">
-              <button
-                onClick={() => setShowMore(prev => !prev)}
-                className="px-6 py-2 bg-orange-600 text-white rounded-lg shadow font-bold"
-              >
-                {showMore ? "Show Less" : "See More"}
-              </button>
-            </div>
-          )}
+        )}
         </>
-      ) : (
-        // MAP VIEW
-        <div className="w-full h-[600px] rounded-2xl flex flex-col border border-stone-300 overflow-hidden shadow-xl">
-          <MapContainer
-            center={initialMapCenter}
-            zoom={5}
-            scrollWheelZoom
-            style={{ flexGrow: 1, zIndex: 1 }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {filteredCards
-              .filter(card => card.lat && card.lng)
-              .map(card => (
-                <Marker
-                  key={card.id}
-                  position={[card.lat, card.lng]}
-                  opacity={hoveredCardId === card.id ? 1.0 : 0.8}
-                  eventHandlers={{
-                    mouseover: () => setHoveredCardId(card.id),
-                    mouseout: () => setHoveredCardId(null),
-                    click: () => setSelectedCard(card)
-                  }}
-                >
-                  <Popup>
-                    <div className="font-sans">
-                      <h3 className="font-bold text-teal-700 mb-1">{card.name}</h3>
-                      <p className="text-xs text-stone-600 italic">{card.location || ""}</p>
-                      <p className="text-sm mt-1">{card.desc ? card.desc.substring(0, 50) : card.description?.substring(0, 50)}...</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            {/* Focus/fly to selected */}
-            {highlightedCard && highlightedCard.lat && highlightedCard.lng && (
-              <FlyToLocation position={[highlightedCard.lat, highlightedCard.lng]} />
-            )}
+      )}
+
+
+      {/* MAP VIEW */}
+      {showMap && (
+        <div className="mt-8">
+          <MapContainer center={[21, 78]} zoom={5} className="h-96 rounded-lg shadow-lg">
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {festivalsData.map(f => (
+              <Marker key={f.id} position={[f.lat, f.lng]}>
+                <Popup>{f.name}</Popup>
+              </Marker>
+            ))}
+            {selectedCard?.lat && <FlyToLocation position={[selectedCard.lat, selectedCard.lng]} />}
           </MapContainer>
-          <div className="p-4 bg-stone-100 border-t border-stone-200 flex justify-between items-center">
-            <div className="flex items-center gap-3 text-stone-600">
-              <Download size={20} className="text-blue-500" />
-              <p className="text-sm">
-                <b>Offline Maps:</b> This feature is not supported yet. Use a travel app for offline access.
-              </p>
-            </div>
-            <button onClick={() => setShowMap(false)} className="text-teal-700 font-medium hover:underline text-sm">Return to List</button>
-          </div>
         </div>
       )}
 
-      {/* VIEW TOGGLE BUTTONS */}
-      <div className="flex mt-10 mb-2 justify-center">
-        <div className="bg-stone-100 p-1 rounded-lg flex shadow-inner">
-          <button
-            onClick={() => setShowMap(false)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${!showMap ? 'bg-white shadow-md text-teal-700' : 'text-stone-500 hover:bg-stone-200'}`}
-          >
-            <Grid size={16} /> List View
-          </button>
-          <button
-            onClick={() => setShowMap(true)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${showMap ? 'bg-white shadow-md text-teal-700' : 'text-stone-500 hover:bg-stone-200'}`}
-          >
-            <MapIcon size={16} /> Map View
-          </button>
-        </div>
+      {/* MAP TOGGLE BTN */}
+      <div className="text-center mt-6">
+        <button onClick={() => setShowMap(!showMap)} className="bg-teal-700 text-white px-5 py-2 rounded-lg flex mx-auto gap-2">
+          {showMap ? <Grid /> : <MapIcon />} {showMap ? "Show List View" : "Show Map View"}
+        </button>
       </div>
-
-      {/* CARD MODAL */}
-      {selectedCard && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="relative h-32">
-              <img
-                src={selectedCard.img || 'https://placehold.co/500x300?text=Culture+or+Historical'}
-                className="w-full h-full object-cover"
-                alt={selectedCard.name}
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center p-6">
-                <h2 className="text-2xl font-bold text-white font-serif">{selectedCard.name}</h2>
-              </div>
-              <button onClick={() => setSelectedCard(null)} className="absolute top-4 right-4 bg-black/20 text-white p-1 rounded-full hover:bg-black/40 transition">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="text-sm">
-                {selectedCard.cardType === "festival" && (
-                  <>
-                    <b>Month:</b> {selectedCard.month}<br />
-                    <b>Location:</b> {selectedCard.location}<br /><br />
-                    {selectedCard.desc}
-                  </>
-                )}
-                {selectedCard.cardType === "culture" && (
-                  <>
-                    <b>Aspect:</b> {selectedCard.aspect}<br /><br />
-                    {selectedCard.description}
-                  </>
-                )}
-                {selectedCard.cardType === "historical" && (
-                  <>
-                    <b>Era:</b> {selectedCard.era}<br />
-                    <b>Location:</b> {selectedCard.location}<br /><br />
-                    {selectedCard.description}
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="bg-stone-50 p-4 border-t border-stone-100 flex justify-end">
-              <button onClick={() => setSelectedCard(null)} className="px-4 py-2 bg-stone-200 text-stone-800 rounded-lg text-sm font-medium hover:bg-stone-300 transition">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-};
-
-export default Festivals;
+}

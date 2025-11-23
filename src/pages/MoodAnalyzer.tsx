@@ -10,7 +10,7 @@ import jsPDF from 'jspdf';
 
 
 // Mock payment: always success after short delay
-async function makePayment(amount: number): Promise<void> {
+async function makePayment(): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, 1500));
 }
 
@@ -116,8 +116,7 @@ const MoodAnalyzer: React.FC = () => {
   };
   async function payAI() {
     setIsPayingAI(true);
-    const amount = 6500;
-    await makePayment(amount);
+    await makePayment();
     setIsPayingAI(false);
     setPaidAI(true);
   }
@@ -496,8 +495,7 @@ const DESTINATIONS: Destination[] = [
 
   async function pay() {
     setIsPaying(true);
-    const amount = 5000 + energy * 120 + adventure * 180 + social * 100;
-    await makePayment(amount);
+    await makePayment();
     setIsPaying(false);
     setStep(6);
   }
