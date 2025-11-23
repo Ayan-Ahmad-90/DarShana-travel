@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Plane, Train, Ship, Bike, Car, Search, Rocket } from "lucide-react";
+import { Plane, Train, Ship, Bike, Car, Search, MapPin, Rocket } from "lucide-react";
 
 const TravelHub = () => {
-  const [selectedMode, setSelectedMode] = useState<string>("flight");
+  const [selectedMode, setSelectedMode] = useState("flight");
 
   const travelModes = [
     { id: "flight", label: "Flights", icon: Plane },

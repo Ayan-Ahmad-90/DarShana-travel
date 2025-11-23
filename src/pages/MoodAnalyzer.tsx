@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, RefreshCw, MapPin, Loader2 } from 'lucide-react';
+import { Camera, Upload, RefreshCw, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 
