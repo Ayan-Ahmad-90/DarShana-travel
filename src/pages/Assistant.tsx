@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, Shield, Languages, Phone } from "lucide-react";
-import { getChatResponse } from "../services/geminiService";
+import { Send, Bot, User, Shield, Languages, Phone } from 'lucide-react';
+import { getChatResponse } from '../services/geminiService';
 
 const Assistant: React.FC = () => {
   const [messages, setMessages] = useState<{role: string, parts: {text: string}[]}[]>([

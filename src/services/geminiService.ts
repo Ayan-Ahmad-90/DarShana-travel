@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
-// 👉 Your Gemini API Key yaha daalo
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -56,88 +55,8 @@ export async function getChatResponse(history: any[], userInput: string) {
 // -----------------------------------------------------
 export async function getFestivalDetails(festivalName: string) {
   try {
-    const prompt = `
-      Give a simple, short and clear explanation about the Indian festival:
-      "${festivalName}"
-    `;
-
-    const result = await model.generateContent(prompt);
-    return result.response.text();
-  } catch (err) {
-    console.error("Festival Error:", err);
-    return "Unable to fetch festival details.";
-  }
-}
-
-
-// ---------------------------------------------------------------
-// 3️⃣ FUNCTION → Mood Analyzer (Used in MoodAnalyzer.jsx)
-// ---------------------------------------------------------------
-export async function analyzeMoodAndRecommend(imageBase64: string) {
-  try {
-    const prompt = `
-You are an AI emotion reader expert. Analyze the person's facial expression from this image and determine:
-
-1. Mood (happy, sad, stressed, excited, calm, angry, etc.)
-2. Reasoning (1–2 lines)
-3. Recommend 3 Indian travel destinations based on this mood.
-
-Return JSON exactly in this format:
-{
-  "detectedMood": "...",
-  "reasoning": "...",
-  "recommendations": [
-    {
-      "name": "...",
-      "location": "...",
-      "description": "...",
-      "tags": ["...", "..."]
-    }
-  ]
-}
-    `;
-
-    const result = await model.generateContent({
-      safetySettings,
-      contents: [
-        {
-          role: "user",
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType: "image/jpeg", data: imageBase64.split(",")[1] } }
-          ]
-        }
-      ],
-    });
-
-    const text = result.response.text();
-    return JSON.parse(text); // convert JSON string → object
-
-  } catch (err) {
-    console.error("Mood analysis error:", err);
-    return {
-      detectedMood: "Unknown",
-      reasoning: "Could not analyze the image.",
-      recommendations: [],
-    };
-  }
-}
-
-// ----------------------------------------------
-// 3️⃣ FUNCTION → Sustainable Travel Routes
-// ----------------------------------------------
-export async function getSustainableRouteOptions(location: string) {
-  try {
-    const prompt = `
-      Suggest sustainable and eco-friendly travel route options for:
-      "${location}"
-
-      Include:
-      - best transport mode (eco-friendly)
-      - approx cost
-      - CO2 emission
-      - why this is sustainable
-    `;
+    const prompt = `Explain the cultural, historical, and tourism significance of the Indian festival "${festivalName}". 
+Make it short, helpful, and easy to understand for travelers.`;
 
     const result = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -147,8 +66,25 @@ export async function getSustainableRouteOptions(location: string) {
     return result.response.text();
 
   } catch (error) {
-    console.error("Eco Route Error:", error);
-    return "Sorry, unable to fetch sustainable travel routes.";
+    console.error("Festival fetch error:", error);
+    return "Sorry, unable to fetch festival details.";
+  }
+}
+
+export async function getSustainableRouteOptions(from: string, to: string) {
+  try {
+    const prompt = `Suggest 3-5 sustainable, eco-friendly travel options for going from "${from}" to "${to}" in India. For each, provide: name, short route, a one-sentence description, and top eco-friendly tips. Respond in markdown table format or as a short structured list.`;
+
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      safetySettings,
+    });
+
+    return result.response.text();
+
+  } catch (error) {
+    console.error("Eco route fetch error:", error);
+    return "Sorry, unable to fetch sustainable route options.";
   }
 }
 

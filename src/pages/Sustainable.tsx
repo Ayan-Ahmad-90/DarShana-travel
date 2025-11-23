@@ -13,7 +13,7 @@ const Sustainable: React.FC = () => {
     if (!from || !to) return;
     setLoading(true);
     try {
-      const data = await getSustainableRouteOptions(`${from} to ${to}`);
+      const data = await getSustainableRouteOptions(from, to);
       setRouteData(data);
     } catch (error) {
       console.error(error);
