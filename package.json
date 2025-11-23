@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "homepage": "https://Ayan-Ahmad-90.github.io/DarShana-travel/",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "face-api.js": "^0.22.2",
